@@ -7,10 +7,11 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null); 
+  const [authLoading, setAuthLoading] = useState(true); // 👈 New
 
   const checkAuth = async () => {
     try {
-      const res = await fetch("/api/auth/me", {
+      const res = await fetch("/api/auth", {
         method: "GET",
         credentials: "include",
       });
@@ -27,6 +28,8 @@ export const AuthProvider = ({ children }) => {
       console.error("Error checking authentication:", error);
       setIsAuthenticated(false);
       setUser(null);
+    } finally {
+      setAuthLoading(false); // ✅ Done checking
     }
   };
 
@@ -35,7 +38,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, setIsAuthenticated }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, authLoading, setIsAuthenticated }}>
       {children}
     </AuthContext.Provider>
   );

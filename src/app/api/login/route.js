@@ -1,4 +1,4 @@
-import dbConnect  from "@/lib/dbConnect";
+import dbConnect from "@/lib/dbConnect";
 import User from "@/lib/models/User";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -18,16 +18,21 @@ export async function POST(req) {
     return new Response(JSON.stringify({ error: "Invalid credentials" }), { status: 401 });
   }
 
-  const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+  const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
     expiresIn: "7d",
   });
 
-  const response = new Response(JSON.stringify({ message: "Login successful." }), { status: 200 });
+  const cookie = `token=${token}; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict; ${
+    process.env.NODE_ENV === "production" ? "Secure" : ""
+  }`;
 
-  response.headers.set(
-    "Set-Cookie",
-    `token=${token}; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict; Secure`
-  );
+  const response = new Response(JSON.stringify({ message: "Login successful." }), {
+    status: 200,
+    headers: {
+      "Set-Cookie": cookie,
+      "Content-Type": "application/json",
+    },
+  });
 
   return response;
 }

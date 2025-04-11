@@ -17,10 +17,10 @@ import {
   SquaresPlusIcon,
   XMarkIcon,
   UserCircleIcon,
+  UserIcon,
 } from '@heroicons/react/24/outline'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { useAuth } from "../context/AuthContext"
-import { UserIcon } from '@heroicons/react/24/outline'
 
 const products = [
   { name: 'Analytics', description: 'Get a better understanding of your traffic', href: '#', icon: ChartPieIcon },
@@ -37,14 +37,14 @@ export default function Navbar() {
   return (
     <header className="bg-background shadow-sm">
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8" aria-label="Global">
-        <div className="flex lg:flex-1">
-          <a href="/" className="-m-1.5 p-1.5">
-            <span className="sr-only">Finalyzer</span>
+        <div className="flex lg:flex-1 items-center gap-2">
+          <a href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
             <img
               className="h-8 w-auto"
               src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
               alt="Finalyzer logo"
             />
+            <span className="text-white text-lg font-semibold">Finalyzer</span>
           </a>
         </div>
         <div className="flex lg:hidden">
@@ -59,6 +59,12 @@ export default function Navbar() {
         </div>
         {isAuthenticated ? (
           <div className="flex items-center gap-4">
+            <a href="/scan" className="rounded-2xl bg-purple-600 px-6 py-3 text-white font-medium hover:bg-purple-700 transition">
+              Scan Receipt
+            </a>
+            <a href="/transaction" className="rounded-2xl bg-purple-600 px-6 py-3 text-white font-medium hover:bg-purple-700 transition">
+              Add Transaction
+            </a>
             <a href="#" className="rounded-2xl bg-purple-600 px-6 py-3 text-white font-medium hover:bg-purple-700 transition">
               Dashboard
             </a>
@@ -78,13 +84,13 @@ export default function Navbar() {
         <div className="fixed inset-0 z-10" />
         <DialogPanel className="fixed inset-y-0 right-0 z-10 w-full overflow-y-auto bg-background px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
           <div className="flex items-center justify-between">
-            <a href="/" className="-m-1.5 p-1.5">
-              <span className="sr-only">Finalyzer</span>
+            <a href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
               <img
                 className="h-8 w-auto"
                 src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
                 alt=""
               />
+              <span className="text-white text-lg font-semibold">Finalyzer</span>
             </a>
             <button
               type="button"
