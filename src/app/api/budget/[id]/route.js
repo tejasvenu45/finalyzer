@@ -1,5 +1,5 @@
 import dbConnect from '@/lib/dbConnect';
-import BudgetConfig from '@/lib/models/BudgetConfig ';
+import BudgetConfig from '@/lib/models/BudgetConfig';
 
 export async function GET(_, { params }) {
   await dbConnect();

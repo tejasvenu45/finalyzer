@@ -3,8 +3,11 @@
 import { useRef, useState } from "react";
 import { Camera, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
+import Tesseract from "tesseract.js";
 
 export default function ReceiptScannerPage() {
+  const { isAuthenticated, user, authLoading } = useAuth();
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
 
@@ -14,14 +17,32 @@ export default function ReceiptScannerPage() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("receipt", file);
-
     setLoading(true);
+
     try {
+      const { data: { text } } = await Tesseract.recognize(file, "eng", {
+        logger: (m) => console.log(m), 
+      });
+
+      const lines = text.split("\n").map(line => line.trim()).filter(Boolean);
+      const amountLine = lines.find(line => line.includes("$") || line.toLowerCase().includes("total"));
+      const amountMatch = amountLine?.match(/(\d+[.,]?\d*)/);
+
+      const transaction = {
+        date: new Date().toISOString(),
+        amount: parseFloat(amountMatch?.[0]) || 0,
+        description: lines[0] || "Scanned Receipt",
+        category: "misc",
+        isRecurring: false,
+        recurringInterval: null,
+      };
+
       const res = await fetch("/api/scan", {
         method: "POST",
-        body: formData,
+        body: JSON.stringify(transaction),
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
 
       const data = await res.json();
@@ -29,11 +50,11 @@ export default function ReceiptScannerPage() {
         toast.success("Transaction added successfully!");
         console.log("Scanned Transaction:", data.transaction);
       } else {
-        toast.error(data.message || "Failed to scan receipt.");
+        toast.error(data.message || "Failed to save transaction.");
       }
     } catch (err) {
       console.error(err);
-      toast.error("An error occurred.");
+      toast.error("An error occurred while scanning the receipt.");
     } finally {
       setLoading(false);
     }

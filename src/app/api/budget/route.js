@@ -1,5 +1,5 @@
 import dbConnect from '@/lib/dbConnect';
-import BudgetConfig from '@/lib/models/BudgetConfig ';
+import BudgetConfig from '@/lib/models/BudgetConfig';
 
 export async function POST(req) {
   await dbConnect();
