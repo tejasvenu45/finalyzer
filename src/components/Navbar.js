@@ -65,7 +65,7 @@ export default function Navbar() {
             <a href="/transaction" className="rounded-2xl bg-purple-600 px-6 py-3 text-white font-medium hover:bg-purple-700 transition">
               Add Transaction
             </a>
-            <a href="#" className="rounded-2xl bg-purple-600 px-6 py-3 text-white font-medium hover:bg-purple-700 transition">
+            <a href="/dashboard" className="rounded-2xl bg-purple-600 px-6 py-3 text-white font-medium hover:bg-purple-700 transition">
               Dashboard
             </a>
             <UserIcon className="w-6 h-6 text-purple-600" />
