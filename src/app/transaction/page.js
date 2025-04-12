@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function TransactionsPage() {
   const router = useRouter();
   const { isAuthenticated, user, authLoading } = useAuth();
 
-  const [transactions, setTransactions] = useState([]);
   const [formData, setFormData] = useState({
     type: "expense",
     amount: "",
@@ -17,32 +19,15 @@ export default function TransactionsPage() {
     date: "",
   });
   const [editingId, setEditingId] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-
-useEffect(() => {
-  if (!authLoading) {
-    if (!isAuthenticated || !user) {
-      router.push("/login");
-    } else {
-      fetchTransactions(); 
-    }
-  }
-}, [authLoading, isAuthenticated, user]);
-
-
-  const fetchTransactions = async () => {
-    try {
-      const res = await fetch("/api/transactions");
-      const data = await res.json();
-      if (data.success) {
-        setTransactions(data.data);
-      } else {
-        console.error("Failed to fetch transactions:", data.message);
+  useEffect(() => {
+    if (!authLoading) {
+      if (!isAuthenticated || !user) {
+        router.push("/login");
       }
-    } catch (err) {
-      console.error("Error fetching transactions:", err);
     }
-  };
+  }, [authLoading, isAuthenticated, user, router]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -50,14 +35,16 @@ useEffect(() => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+
+    if (!user || !user._id) {
+      console.error("User not ready");
+      setIsLoading(false);
+      return;
+    }
 
     const endpoint = editingId ? "/api/transactions" : "/api/transactions";
     const method = editingId ? "PUT" : "POST";
-    
-    if (!user || !user._id) {
-        console.error("User not ready");
-        return;
-    }
 
     const dataToSend = {
       ...formData,
@@ -78,7 +65,6 @@ useEffect(() => {
       const result = await res.json();
 
       if (result.success) {
-        fetchTransactions();
         setFormData({
           type: "expense",
           amount: "",
@@ -89,92 +75,138 @@ useEffect(() => {
         setEditingId(null);
       } else {
         console.error("Error:", result.message);
+        alert(result.message || "Failed to save transaction");
       }
     } catch (err) {
       console.error("Request failed:", err);
+      alert("An error occurred while saving the transaction");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleEdit = (transaction) => {
-    setFormData({
-      type: transaction.type,
-      amount: transaction.amount,
-      description: transaction.description,
-      category: transaction.category,
-      date: transaction.date?.substring(0, 10),
-    });
-    setEditingId(transaction._id);
-  };
-
   return (
-    <div className="p-4 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Transactions</h1>
-
-      <form onSubmit={handleSubmit} className="space-y-4 mb-6">
-        <select name="type" value={formData.type} onChange={handleChange} className="w-full p-2 border">
-          <option value="Expense">Expense</option>
-          <option value="Income">Income</option>
-        </select>
-        <input
-          name="amount"
-          type="number"
-          placeholder="Amount"
-          value={formData.amount}
-          onChange={handleChange}
-          className="w-full p-2 border"
-        />
-        <input
-          name="description"
-          type="text"
-          placeholder="Description"
-          value={formData.description}
-          onChange={handleChange}
-          className="w-full p-2 border"
-        />
-        <input
-          name="category"
-          type="text"
-          placeholder="Category"
-          value={formData.category}
-          onChange={handleChange}
-          className="w-full p-2 border"
-        />
-        <input
-          name="date"
-          type="date"
-          value={formData.date}
-          onChange={handleChange}
-          className="w-full p-2 border"
-        />
-        <button
-          type="submit"
-          className="bg-primary text-white px-4 py-2 rounded"
-        >
-          {editingId ? "Update" : "Add"} Transaction
-        </button>
-      </form>
-
-      <ul className="space-y-4">
-        {transactions.map((tx) => (
-          <li key={tx._id} className="border p-4 rounded">
-            <div className="flex justify-between">
-              <div>
-                <strong>{tx.type.toUpperCase()}:</strong> ₹{tx.amount}
-              </div>
-              <div>{new Date(tx.date).toLocaleDateString()}</div>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white flex items-center justify-center p-6">
+      <Card className="w-full max-w-md shadow-lg border border-purple-100 transition-all duration-300 hover:shadow-xl">
+        <CardHeader className="bg-purple-600 text-white rounded-t-md">
+          <CardTitle className="text-4xl font-bold text-center">
+            📝 Add New Transaction
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label
+                htmlFor="type"
+                className="block text-purple-700 text-lg font-medium text-center"
+              >
+                Transaction Type
+              </label>
+              <select
+                id="type"
+                name="type"
+                value={formData.type}
+                onChange={handleChange}
+                disabled={isLoading}
+                className="w-full border-purple-200 focus:border-purple-500 rounded-md p-2 text-center bg-white disabled:opacity-50"
+                aria-describedby="type-error"
+              >
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+              </select>
             </div>
-            <div className="text-sm text-gray-600">
-              {tx.description} — {tx.category}
+
+            <div className="space-y-2">
+              <label
+                htmlFor="amount"
+                className="block text-purple-700 text-lg font-medium text-center"
+              >
+                Amount (₹)
+              </label>
+              <Input
+                id="amount"
+                name="amount"
+                type="number"
+                placeholder="Enter amount"
+                value={formData.amount}
+                onChange={handleChange}
+                required
+                disabled={isLoading}
+                className="border-purple-200 focus:border-purple-500 text-center"
+                aria-describedby="amount-error"
+              />
             </div>
-            <button
-              onClick={() => handleEdit(tx)}
-              className="mt-2 text-blue-500 underline text-sm"
+
+            <div className="space-y-2">
+              <label
+                htmlFor="description"
+                className="block text-purple-700 text-lg font-medium text-center"
+              >
+                Description
+              </label>
+              <Input
+                id="description"
+                name="description"
+                type="text"
+                placeholder="Enter description"
+                value={formData.description}
+                onChange={handleChange}
+                disabled={isLoading}
+                className="border-purple-200 focus:border-purple-500 text-center"
+                aria-describedby="description-error"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="category"
+                className="block text-purple-700 text-lg font-medium text-center"
+              >
+                Category
+              </label>
+              <Input
+                id="category"
+                name="category"
+                type="text"
+                placeholder="Enter category"
+                value={formData.category}
+                onChange={handleChange}
+                disabled={isLoading}
+                className="border-purple-200 focus:border-purple-500 text-center"
+                aria-describedby="category-error"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="date"
+                className="block text-purple-700 text-lg font-medium text-center"
+              >
+                Date
+              </label>
+              <Input
+                id="date"
+                name="date"
+                type="date"
+                value={formData.date}
+                onChange={handleChange}
+                required
+                disabled={isLoading}
+                className="border-purple-200 focus:border-purple-500 text-center"
+                aria-describedby="date-error"
+              />
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white text-xl font-bold py-3 rounded-md flex items-center justify-center disabled:opacity-50"
             >
-              Edit
-            </button>
-          </li>
-        ))}
-      </ul>
+              {editingId ? "Update" : "Add"} Transaction
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
