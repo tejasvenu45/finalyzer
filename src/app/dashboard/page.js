@@ -36,7 +36,6 @@ export default function BudgetDashboard() {
   const [aiAdvice, setAiAdvice] = useState('');
   const [loadingAdvice, setLoadingAdvice] = useState(false);
   const [form, setForm] = useState({
-    userId: "",
     totalBudget: "",
     emergencyFundGoal: "",
     monthlySavingsTarget: "",
@@ -118,8 +117,7 @@ export default function BudgetDashboard() {
 
   const createBudget = async () => {
     try {
-      // Validate inputs
-      if (!form.userId || !form.totalBudget) {
+      if (!form.totalBudget) {
         throw new Error("User ID and Total Budget are required");
       }
       await axios.post("/api/budget", { ...form, categories });
@@ -207,12 +205,6 @@ export default function BudgetDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Input
-                placeholder="User ID"
-                className="border-purple-200 focus:border-purple-500"
-                value={form.userId}
-                onChange={(e) => setForm({ ...form, userId: e.target.value })}
-              />
               <Input
                 placeholder="Total Budget"
                 type="number"

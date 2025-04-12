@@ -20,11 +20,18 @@ const getUserFromToken = async () => {
 export async function POST(req) {
   await dbConnect();
   const body = await req.json();
+  const userId = await getUserFromToken();
+  console.log("post", userId)
+
+  if (!userId) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+  }
 
   try {
-    const budget = await BudgetConfig.create(body);
+    const budget = await BudgetConfig.create({ ...body, userId });
     return new Response(JSON.stringify(budget), { status: 201 });
   } catch (err) {
+    console.log(err)
     return new Response(JSON.stringify({ error: err.message }), { status: 400 });
   }
 }
