@@ -33,7 +33,8 @@ export default function BudgetDashboard() {
   const [budget, setBudget] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [balance, setBalance] = useState(0);
-
+  const [aiAdvice, setAiAdvice] = useState('');
+  const [loadingAdvice, setLoadingAdvice] = useState(false);
   const [form, setForm] = useState({
     userId: "",
     totalBudget: "",
@@ -43,8 +44,54 @@ export default function BudgetDashboard() {
   });
 
   const [categories, setCategories] = useState([
-    { name: "", percentage: "", limit: "" },
+    { name: '', percentage: '', limit: '' },
   ]);
+
+
+  const analyzeWithAI = async () => {
+    try {
+      setLoadingAdvice(true);
+      setAiAdvice('');
+
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ budget, transactions }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setAiAdvice(data.message);
+      } else {
+        setAiAdvice('Something went wrong with AI analysis.');
+      }
+    } catch (err) {
+      setAiAdvice('Error analyzing with AI.');
+      console.error(err);
+    } finally {
+      setLoadingAdvice(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBudget();
+    fetchTransactions();
+  }, []);
+
+  useEffect(() => {
+    if (budget && transactions.length) {
+      let currentBalance = Number(budget.totalBudget || 0);
+      transactions.forEach((txn) => {
+        if (txn.type === "expense") {
+          currentBalance -= Number(txn.amount || 0);
+        } else if (txn.type === "income") {
+          currentBalance += Number(txn.amount || 0);
+        }
+      });
+      setBalance(currentBalance);
+    }
+  }, [budget, transactions]);
+
 
   const fetchBudget = async () => {
     try {
@@ -306,6 +353,13 @@ export default function BudgetDashboard() {
                   >
                     Delete Budget
                   </Button>
+                  <Button
+                    onClick={analyzeWithAI}
+                    disabled={loadingAdvice}
+                    className="w-full bg-purple-100 text-purple-700 hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors font-medium rounded-md py-3 disabled:opacity-50"
+                  >
+                    {loadingAdvice ? "Analyzing..." : "🔍 Analyze with AI"}
+                  </Button>
                 </CardContent>
               </Card>
 
@@ -344,13 +398,18 @@ export default function BudgetDashboard() {
                 </CardContent>
               </Card>
             </div>
+            {aiAdvice && (
+              <div className="mt-6 bg-blue-50 p-4 rounded-lg border border-blue-200 shadow-sm whitespace-pre-wrap">
+                <h2 className="font-semibold mb-2">💡 AI Advice</h2>
+                <p>{aiAdvice}</p>
+              </div>
+            )}
 
             <Card className="shadow-md border border-purple-100">
               <CardHeader className="bg-purple-600 text-white rounded-t-md">
                 <CardTitle>
-                  <h1 className="text-3xl text-center">
-                    🧾 Transaction History
-                  </h1>
+
+                  <h1 className="text-3xl text-center">🧾 Transaction History</h1>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
@@ -392,11 +451,8 @@ export default function BudgetDashboard() {
                             </span>
                           </span>
                           <span
-                            className={`font-medium ${
-                              txn.type === "expense"
-                                ? "text-red-600"
-                                : "text-green-600"
-                            }`}
+                            className={`font-medium ${txn.type === 'expense' ? 'text-red-600' : 'text-green-600'
+                              }`}
                           >
                             {txn.type === "expense" ? "-" : "+"} ₹{txn.amount}
                           </span>
