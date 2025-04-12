@@ -1,4 +1,3 @@
-// app/dashboard/page.js
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -7,28 +6,23 @@ import { PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Textarea } from '@/components/ui/textarea';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-  } from "@/components/ui/dialog";
-  
+
 const COLORS = ['#4ade80', '#60a5fa', '#facc15', '#f472b6', '#a78bfa', '#f87171'];
 
 export default function BudgetDashboard() {
   const [budget, setBudget] = useState(null);
-  const [form, setForm] = useState({
+  const [transactions, setTransactions] = useState([]);
+  const [balance, setBalance] = useState(0);
+
+  const [form, setForm] = useState({ 
     userId: '',
     totalBudget: '',
     emergencyFundGoal: '',
     monthlySavingsTarget: '',
     strategy: 'Custom',
   });
+
   const [categories, setCategories] = useState([
     { name: '', percentage: '', limit: '' },
   ]);
@@ -42,12 +36,23 @@ export default function BudgetDashboard() {
     }
   };
 
+  const fetchTransactions = async () => {
+    try {
+      const res = await fetch("/api/transactions");
+      const data = await res.json();
+      if (data.success) {
+        setTransactions(data.data);
+      } else {
+        console.error("Failed to fetch transactions:", data.message);
+      }
+    } catch (err) {
+      console.error("Error fetching transactions:", err);
+    }
+  };
+
   const createBudget = async () => {
     try {
-      await axios.post('/api/budget', {
-        ...form,
-        categories,
-      });
+      await axios.post('/api/budget', { ...form, categories });
       fetchBudget();
     } catch (err) {
       console.error(err);
@@ -62,10 +67,6 @@ export default function BudgetDashboard() {
       console.error(err);
     }
   };
-
-  useEffect(() => {
-    fetchBudget();
-  }, []);
 
   const handleCategoryChange = (index, field, value) => {
     const updated = [...categories];
@@ -82,8 +83,23 @@ export default function BudgetDashboard() {
     setCategories(updated);
   };
 
+  useEffect(() => {
+    fetchBudget();
+    fetchTransactions();
+  }, []);
+
+  // Recalculate balance
+  useEffect(() => {
+    if (budget && transactions.length) {
+      const totalExpense = transactions
+        .filter(txn => txn.type === "expense")
+        .reduce((acc, txn) => acc + Number(txn.amount), 0);
+      setBalance(Number(budget.totalBudget) - totalExpense);
+    }
+  }, [budget, transactions]);
+
   return (
-    <div className="p-10 max-w-6xl mx-auto space-y-6">
+    <div className="p-10 max-w-7xl mx-auto space-y-6">
       <h1 className="text-4xl font-bold text-center text-primary">📊 Finalyzer - Your Smart Budget Manager</h1>
 
       {!budget ? (
@@ -113,46 +129,72 @@ export default function BudgetDashboard() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>💼 Budget Overview</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p><strong>Total Budget:</strong> ₹{budget.totalBudget}</p>
-              <p><strong>Emergency Fund Goal:</strong> ₹{budget.emergencyFundGoal}</p>
-              <p><strong>Monthly Savings Target:</strong> ₹{budget.monthlySavingsTarget}</p>
-              <p><strong>Strategy:</strong> {budget.strategy}</p>
-              <Separator />
-              <Button variant="destructive" onClick={deleteBudget}>Delete Budget</Button>
-            </CardContent>
-          </Card>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Budget Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle>💼 Budget Overview</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <p><strong>Total Budget:</strong> ₹{budget.totalBudget}</p>
+                <p><strong>Emergency Fund Goal:</strong> ₹{budget.emergencyFundGoal}</p>
+                <p><strong>Monthly Savings Target:</strong> ₹{budget.monthlySavingsTarget}</p>
+                <p><strong>Strategy:</strong> {budget.strategy}</p>
+                <p><strong>Balance Left:</strong> ₹{balance}</p>
+                <Separator />
+                <Button variant="destructive" onClick={deleteBudget}>Delete Budget</Button>
+              </CardContent>
+            </Card>
 
+            {/* Fund Distribution Pie Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>📈 Fund Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PieChart width={350} height={300}>
+                  <Pie
+                    data={budget.categories}
+                    dataKey="percentage"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    label
+                  >
+                    {budget.categories.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Transaction History */}
           <Card>
             <CardHeader>
-              <CardTitle>📈 Fund Distribution</CardTitle>
+              <CardTitle>🧾 Transaction History</CardTitle>
             </CardHeader>
-            <CardContent>
-              <PieChart width={350} height={300}>
-                <Pie
-                  data={budget.categories}
-                  dataKey="percentage"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  label
-                >
-                  {budget.categories.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
+            <CardContent className="space-y-2 max-h-[300px] overflow-y-auto">
+              {transactions.length === 0 ? (
+                <p className="text-muted-foreground">No transactions found.</p>
+              ) : (
+                transactions.map((txn, idx) => (
+                  <div key={idx} className="flex justify-between border-b py-2 text-sm">
+                    <span>{txn.date?.slice(0, 10) || 'Date'}</span>
+                    <span className="capitalize">{txn.type}</span>
+                    <span>{txn.category}</span>
+                    <span>₹{txn.amount}</span>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
-        </div>
+        </>
       )}
     </div>
   );

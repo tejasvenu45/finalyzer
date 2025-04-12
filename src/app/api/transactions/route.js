@@ -1,8 +1,8 @@
+// /api/transactions/route.js:
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import Transaction from "@/lib/models/Transaction";
-import BudgetConfig from "@/lib/models/BudgetConfig";
 import dbConnect from "@/lib/dbConnect";
 
 const getUserFromToken = async () => {
@@ -49,16 +49,6 @@ export async function POST(req) {
     const data = await req.json();
     const transaction = new Transaction({ ...data, user: userId });
     await transaction.save();
-
-    const budget = await BudgetConfig.findOne({ userId: userId });
-
-    if (!budget) {
-      return NextResponse.json({ success: false, message: "Budget configuration not found" }, { status: 404 });
-    }
-
-    const newTotalBudget = (data.type === "expense") ? budget.totalBudget - data.amount : budget.totalBudget + data.amount;
-
-    await BudgetConfig.findOneAndUpdate({ userId: userId }, { $set: { totalBudget: newTotalBudget } });
 
     return NextResponse.json({ success: true, data: transaction });
   } catch (err) {
