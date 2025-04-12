@@ -37,6 +37,16 @@ export async function POST(req) {
     const transaction = new Transaction({ ...data, type: "expense", user: userId });
     await transaction.save();
 
+    const budget = await BudgetConfig.findOne({ userId: userId });
+    
+    if (!budget) {
+      return NextResponse.json({ success: false, message: "Budget configuration not found" }, { status: 404 });
+    }
+
+    const newTotalBudget = budget.totalBudget - data.amount;
+
+    await BudgetConfig.findOneAndUpdate({ userId: userId }, { $set: { totalBudget: newTotalBudget } });    
+
     return NextResponse.json({ success: true, data: transaction });
   } catch (err) {
     console.error(err);

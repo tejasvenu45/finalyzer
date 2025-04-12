@@ -24,7 +24,7 @@ useEffect(() => {
     if (!isAuthenticated || !user) {
       router.push("/login");
     } else {
-    //   fetchTransactions(); 
+      fetchTransactions(); 
     }
   }
 }, [authLoading, isAuthenticated, user]);
@@ -78,7 +78,7 @@ useEffect(() => {
       const result = await res.json();
 
       if (result.success) {
-        // fetchTransactions();
+        fetchTransactions();
         setFormData({
           type: "expense",
           amount: "",

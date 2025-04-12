@@ -19,6 +19,24 @@ const getUserFromToken = async () => {
   }
 };
 
+export async function GET(req) {
+  try {
+    await dbConnect();
+
+    const userId = await getUserFromToken();
+    if (!userId) {
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    }
+
+    const transactions = await Transaction.find({ user: userId }).sort({ date: -1 });
+
+    return NextResponse.json({ success: true, data: transactions });
+  } catch (err) {
+    return NextResponse.json({ success: false, message: err.message }, { status: 400 });
+  }
+}
+
+
 export async function POST(req) {
   try {
     await dbConnect();
@@ -38,7 +56,7 @@ export async function POST(req) {
       return NextResponse.json({ success: false, message: "Budget configuration not found" }, { status: 404 });
     }
 
-    const newTotalBudget = budget.totalBudget - data.amount;
+    const newTotalBudget = (data.type === "expense") ? budget.totalBudget - data.amount : budget.totalBudget + data.amount;
 
     await BudgetConfig.findOneAndUpdate({ userId: userId }, { $set: { totalBudget: newTotalBudget } });
 
