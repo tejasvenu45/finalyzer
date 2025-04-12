@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from '../context/AuthContext.js';
 import Navbar from "@/components/Navbar.js";
+import Footer from "@/components/Footer.js";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,6 +28,7 @@ export default function RootLayout({ children }) {
        <AuthProvider>
         <Navbar/>
        {children}
+       <Footer/>
         </AuthProvider> 
       </body>
     </html>

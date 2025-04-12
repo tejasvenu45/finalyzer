@@ -1,7 +1,12 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
 
 export default function Signup() {
@@ -84,62 +89,86 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-full bg-black flex items-center justify-center py-12">
-      <form
-        onSubmit={handleSubmit}
-        className="w-11/12 sm:w-3/4 md:w-1/2 lg:w-1/3 bg-black text-white border-4 border-white rounded-2xl shadow-sm shadow-green-500 p-10"
-      >
-        <h2 className="text-5xl font-bold text-[#329D36] text-center mb-8">SIGN UP</h2>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white flex items-center justify-center p-6">
+      <Card className="w-full max-w-md shadow-lg border border-purple-100 transition-all duration-300 hover:shadow-xl">
+        <CardHeader className="bg-purple-600 text-white rounded-t-md">
+          <CardTitle className="text-4xl font-bold text-center">
+            📝 Sign Up for Finalyzer
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {[
+              { label: "Full Name", name: "name", type: "text", placeholder: "John Doe" },
+              { label: "Email", name: "email", type: "email", placeholder: "you@example.com" },
+              { label: "Password", name: "password", type: "password", placeholder: "********" },
+              { label: "Age", name: "age", type: "number", min: 13, placeholder: "18" },
+              { label: "Occupation", name: "occupation", type: "text", placeholder: "e.g., Student" },
+              { label: "Monthly Income", name: "monthlyIncome", type: "number", placeholder: "50000" },
+              { label: "Savings Goal", name: "savingsGoal", type: "number", placeholder: "10000" },
+            ].map(({ label, name, type, placeholder, ...rest }) => (
+              <div key={name} className="space-y-2">
+                <label
+                  htmlFor={name}
+                  className="block text-purple-700 text-lg font-medium text-center"
+                >
+                  {label}
+                </label>
+                <Input
+                  type={type}
+                  id={name}
+                  name={name}
+                  value={formData[name]}
+                  onChange={handleChange}
+                  required={name !== "occupation" && name !== "savingsGoal"}
+                  disabled={isLoading}
+                  placeholder={placeholder}
+                  className="border-purple-200 focus:border-purple-500 text-center"
+                  aria-describedby={`${name}-error`}
+                  {...rest}
+                />
+              </div>
+            ))}
 
-        {[
-          { label: "Full Name", name: "name", type: "text", placeholder: "John Doe" },
-          { label: "Email", name: "email", type: "email" },
-          { label: "Password", name: "password", type: "password" },
-          { label: "Age", name: "age", type: "number", min: 13 },
-          { label: "Occupation", name: "occupation", type: "text", placeholder: "e.g. Student" },
-          { label: "Monthly Income", name: "monthlyIncome", type: "number" },
-          { label: "Savings Goal", name: "savingsGoal", type: "number" },
-        ].map(({ label, name, type, ...rest }) => (
-          <div key={name} className="mb-5">
-            <label htmlFor={name} className="block text-xl mb-1">{label}</label>
-            <input
-              type={type}
-              id={name}
-              name={name}
-              value={formData[name]}
-              onChange={handleChange}
-              required={name !== "occupation" && name !== "savingsGoal"}
-              className="w-full bg-black px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#329D36]"
-              {...rest}
-            />
-          </div>
-        ))}
+            <Separator className="bg-purple-200" />
 
-        <div className="mb-6">
-          <label className="block text-xl mb-2">Preferred Budget Categories</label>
-          {["Essentials", "Entertainment", "Savings", "Investments"].map((category) => (
-            <label key={category} className="block text-sm">
-              <input
-                type="checkbox"
-                name="preferredBudgetCategories"
-                value={category}
-                checked={formData.preferredBudgetCategories.includes(category)}
-                onChange={handleChange}
-                className="mr-2"
-              />
-              {category}
-            </label>
-          ))}
-        </div>
+            <div className="space-y-2">
+              <label className="block text-purple-700 text-lg font-medium text-center">
+                Preferred Budget Categories
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {["Essentials", "Entertainment", "Savings", "Investments"].map((category) => (
+                  <label key={category} className="flex items-center space-x-2 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      name="preferredBudgetCategories"
+                      value={category}
+                      checked={formData.preferredBudgetCategories.includes(category)}
+                      onChange={handleChange}
+                      disabled={isLoading}
+                      className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-purple-200 rounded"
+                      aria-label={`Select ${category} category`}
+                    />
+                    <span>{category}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full bg-[#329D36] text-2xl font-bold text-white py-2 rounded-md hover:bg-green-600 flex items-center justify-center disabled:opacity-50"
-        >
-          {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Sign Up"}
-        </button>
-      </form>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white text-xl font-bold py-3 rounded-md flex items-center justify-center disabled:opacity-50"
+            >
+              {isLoading ? (
+                <Loader2 className="w-6 h-6 animate-spin text-purple-200" />
+              ) : (
+                "Sign Up"
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

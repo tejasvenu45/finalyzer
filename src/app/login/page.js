@@ -1,8 +1,11 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext.js";
-// import Footer from "@/components/Footer";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 
 export default function Login() {
@@ -34,7 +37,6 @@ export default function Login() {
         setIsAuthenticated(true);
         router.push("/");
       } else {
-        // Parse error message from server
         const errorData = await res.json();
         alert(errorData.error || "Invalid credentials");
       }
@@ -47,20 +49,23 @@ export default function Login() {
   };
 
   return (
-    <div>
-      <div className="min-h-full bg-black">
-        <div className="flex flex-col items-center justify-center w-full">
-          <form
-            onSubmit={handleSubmit}
-            className="w-11/12 gap-6 mt-24 mb-12 md:mt-36 md:mb-36 sm:w-3/4 md:w-1/2 lg:w-1/3 bg-black text-white border-4 border-white rounded-2xl shadow-sm shadow-[#329D36] p-10"
-          >
-            <h2 className="text-7xl font-bold text-[#329D36] text-center">LOGIN</h2>
-
-            <div className="m-2 md:m-11">
-              <label htmlFor="email" className="block text-white text-center text-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white flex items-center justify-center p-6">
+      <Card className="w-full max-w-md shadow-lg border border-purple-100 transition-all duration-300 hover:shadow-xl">
+        <CardHeader className="bg-purple-600 text-white rounded-t-md">
+          <CardTitle className="text-4xl font-bold text-center">
+            🔐 Login to Finalyzer
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label
+                htmlFor="email"
+                className="block text-purple-700 text-lg font-medium text-center"
+              >
                 Email
               </label>
-              <input
+              <Input
                 type="email"
                 id="email"
                 name="email"
@@ -68,15 +73,20 @@ export default function Login() {
                 onChange={handleChange}
                 required
                 disabled={isLoading}
-                className="w-full bg-black px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-green-500 text-center disabled:opacity-50"
+                placeholder="Enter your email"
+                className="border-purple-200 focus:border-purple-500 text-center"
+                aria-describedby="email-error"
               />
             </div>
 
-            <div className="m-3 md:m-11">
-              <label htmlFor="password" className="block text-white text-center text-2xl">
+            <div className="space-y-2">
+              <label
+                htmlFor="password"
+                className="block text-purple-700 text-lg font-medium text-center"
+              >
                 Password
               </label>
-              <input
+              <Input
                 type="password"
                 id="password"
                 name="password"
@@ -84,25 +94,26 @@ export default function Login() {
                 onChange={handleChange}
                 required
                 disabled={isLoading}
-                className="w-full bg-black px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-green-500 text-center disabled:opacity-50"
+                placeholder="Enter your password"
+                className="border-purple-200 focus:border-purple-500 text-center"
+                aria-describedby="password-error"
               />
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#329D36] text-3xl font-extrabold text-white py-2 rounded-md hover:bg-green-600 focus:outline-none focus:bg-green-600 flex items-center justify-center disabled:opacity-50"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white text-xl font-bold py-3 rounded-md flex items-center justify-center disabled:opacity-50"
             >
               {isLoading ? (
-                <Loader2 className="w-8 h-8 animate-spin" />
+                <Loader2 className="w-6 h-6 animate-spin text-purple-200" />
               ) : (
                 "Login"
               )}
-            </button>
+            </Button>
           </form>
-        </div>
-      </div>
-      {/* <Footer/> */}
+        </CardContent>
+      </Card>
     </div>
   );
 }
