@@ -44,7 +44,7 @@ export default function Navbar() {
               src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
               alt="Finalyzer logo"
             />
-            <span className="text-white text-lg font-semibold">Finalyzer</span>
+            <span className="text-purple-600 text-4xl  font-bold">FINALYZER</span>
           </a>
         </div>
         <div className="flex lg:hidden">
