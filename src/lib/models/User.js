@@ -41,7 +41,7 @@ const UserSchema = new mongoose.Schema({
 
   preferredBudgetCategories: {
     type: [String],
-    default: ['Essentials', 'Entertainment', 'Savings', 'Investments'],
+    default: ["Essentials", "Entertainment", "Savings", "Investments"],
   },
 
   isPremiumUser: {
@@ -51,14 +51,16 @@ const UserSchema = new mongoose.Schema({
 
   role: {
     type: String,
-    enum: ['user', 'admin'],
-    default: 'user',
+    enum: ["user", "admin"],
+    default: "user",
   },
 
-  expenses: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Expense"
-  }],
+  expenses: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Expense",
+    },
+  ],
 
   createdAt: {
     type: Date,
@@ -66,12 +68,16 @@ const UserSchema = new mongoose.Schema({
   },
   points: {
     type: Number,
-    default: 0
+    default: 0,
   },
   streak: {
     type: Number,
-    default: 0
-  }
+    default: 0,
+  },
+  lastRewardCheck: {
+    type: String, // e.g., "2024-01"
+    default: null,
+  },
 });
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);
