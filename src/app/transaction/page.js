@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import axios from "axios";
 
 export default function TransactionsPage() {
   const router = useRouter();
@@ -21,13 +22,31 @@ export default function TransactionsPage() {
   const [editingId, setEditingId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (!authLoading) {
-      if (!isAuthenticated || !user) {
-        router.push("/login");
-      }
+  const [cat, setCat] = useState([])
+
+  const fetchCat = async () => {
+    try {
+      const res = await axios.get("/api/categories");
+      setCat(res.data.data || []); 
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+      setCat([]);
     }
-  }, [authLoading, isAuthenticated, user, router]);
+  };
+  
+
+  useEffect(() => {
+    const init = async () => {
+      if (!authLoading) {
+        if (!isAuthenticated || !user) {
+          router.push("/login");
+        } else {
+          await fetchCat();
+        }
+      }
+    };
+    init();
+  }, [authLoading, isAuthenticated, user, router]);  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -164,17 +183,24 @@ export default function TransactionsPage() {
               >
                 Category
               </label>
-              <Input
+              <select
                 id="category"
                 name="category"
-                type="text"
-                placeholder="Enter category"
                 value={formData.category}
                 onChange={handleChange}
                 disabled={isLoading}
-                className="border-purple-200 focus:border-purple-500 text-center"
+                className="w-full border-purple-200 focus:border-purple-500 rounded-md p-2 text-center bg-white disabled:opacity-50"
                 aria-describedby="category-error"
-              />
+              >
+                <option value="" disabled>
+                  {cat.length === 0 ? "No categories available" : "Select a category"}
+                </option>
+                {Array.isArray(cat) && cat.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-2">
