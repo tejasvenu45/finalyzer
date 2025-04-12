@@ -59,6 +59,9 @@ export default function Navbar() {
         </div>
         {isAuthenticated ? (
           <div className="flex items-center gap-4">
+            <a href="/chat" className="rounded-2xl bg-purple-600 px-6 py-3 text-white font-medium hover:bg-purple-700 transition">
+              Financial Chatbot
+            </a>
             <a href="/scan" className="rounded-2xl bg-purple-600 px-6 py-3 text-white font-medium hover:bg-purple-700 transition">
               Scan Receipt
             </a>

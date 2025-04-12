@@ -1,169 +1,391 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { SendIcon, PlusIcon, SettingsIcon, ThumbsUpIcon, ThumbsDownIcon } from 'lucide-react';
+import { useState, useRef, useEffect } from "react";
 
 export default function Home() {
-  const [inputValue, setInputValue] = useState('');
-  const [isThinking, setIsThinking] = useState(false);
-  const messagesEndRef = useRef(null);
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: "Hello! I'm your financial assistant. How can I help you today?",
-      isIntro: true
-    }
-  ]);
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const bottomRef = useRef(null);
 
   useEffect(() => {
-    scrollToBottom();
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const handleSend = async () => {
+    if (!input.trim()) return;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!inputValue.trim()) return;
-
-    const newMessages = [...messages, { role: 'user', content: inputValue }];
-    setMessages(newMessages);
-    setInputValue('');
-    setIsThinking(true);
+    const userMsg = { sender: "user", text: input };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: inputValue })
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: input }),
       });
 
-      const data = await response.json();
-      if (data.success) {
-        setTimeout(() => {
-          setMessages([...newMessages, { role: 'assistant', content: data.data.response }]);
-          setIsThinking(false);
-        }, 800);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setIsThinking(false);
-    }
-  };
+      const data = await res.json();
 
-  const formatMessage = (content) => {
-    let formatted = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-[#FFD23F] underline">$1</a>');
-    formatted = formatted.replace(/\n/g, '<br />');
-    return formatted;
+      let responseText = data?.data?.response || "🤖 No response received.";
+      responseText = responseText
+      .replace(/\*\*(.+?)\*\*/g, "<strong><em>$1</em></strong>")
+      .replace(/\*(.+?)\*/g, "<strong>$1</strong>")               
+      .replace(/_(.+?)_/g, "<em>$1</em>");                         
+    
+
+      const botMsg = {
+        sender: "bot",
+        text: responseText,
+        isHtml: true,
+      };
+
+      setMessages((prev) => [...prev, botMsg]);
+    } catch (error) {
+      console.error("Gemini API error:", error);
+      const botMsg = {
+        sender: "bot",
+        text: "⚠️ Error fetching Gemini response.",
+      };
+      setMessages((prev) => [...prev, botMsg]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="flex h-screen bg-[#F7F7F7] text-[#1F2937]">
-      {/* Sidebar */}
-      {/* <aside className="w-16 md:w-64 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-4">
-          <button className="w-full flex items-center justify-center md:justify-start gap-2 rounded-md py-2 px-3 bg-[#1A936F] text-white font-medium hover:bg-[#157a5a]">
-            <PlusIcon size={20} />
-            <span className="hidden md:inline">New Chat</span>
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto px-4">
-          {/* Future: Chat history 
-        </div>
-        <div className="p-4 border-t border-gray-100">
-          <button className="w-full flex items-center justify-center md:justify-start gap-2 rounded-md py-2 px-3 text-[#1F2937] hover:bg-gray-100">
-            <SettingsIcon size={20} />
-            <span className="hidden md:inline">Settings</span>
-          </button>
-        </div>
-      </aside> */}
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(145deg, #0f172a, #1e293b)",
+        color: "#FFFFFF",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "2rem",
+        fontFamily: "'Inter', 'Segoe UI', sans-serif",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "800px",
+          background: "rgba(30, 41, 59, 0.8)",
+          backdropFilter: "blur(10px)",
+          borderRadius: "16px",
+          padding: "2rem",
+          boxShadow: "0 20px 40px rgba(0, 0, 0, 0.4)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+        }}
+      >
+        <header
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "1.5rem",
+            paddingBottom: "1rem",
+            borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+          }}
+        >
+          <h1
+            style={{
+              fontSize: "1.8rem",
+              fontWeight: "600",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+              margin: 0,
+            }}
+          >
+            <span
+              style={{
+                background: "linear-gradient(to right, #8B5CF6, #EC4899)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                textShadow: "0 1px 3px rgba(0,0,0,0.2)",
+              }}
+            >
+              FinAI
+            </span>
+            <div
+              style={{
+                background: "linear-gradient(to right, #8B5CF6, #EC4899)",
+                borderRadius: "50%",
+                width: "12px",
+                height: "12px",
+                boxShadow: "0 0 10px rgba(139, 92, 246, 0.5)",
+              }}
+            ></div>
+          </h1>
+        </header>
 
-      {/* Chat content */}
-      <section className="flex-1 flex flex-col">
-        {/* Header */}
-        {/* <header className="p-4 border-b border-gray-200 bg-white flex items-center shadow-sm">
-          <div className="w-8 h-8 rounded-full bg-[#1A936F] flex items-center justify-center text-white font-bold mr-3">
-            F
-          </div>
-          <h1 className="text-lg font-semibold">Finance Assistant</h1>
-        </header> */}
-
-        {/* Chat Messages */}
-        <main className="flex-1 overflow-y-auto p-6 space-y-6">
-          {messages.map((message, index) => (
-            <div key={index} className="max-w-3xl mx-auto">
-              <div className="flex items-start gap-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0 ${message.role === 'user' ? 'bg-[#114B5F] text-white' : 'bg-[#D9F2EA] text-[#114B5F]'}`}>
-                  {message.role === 'user' ? 'U' : 'F'}
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm font-semibold text-gray-700 mb-1">
-                    {message.role === 'user' ? 'You' : 'Finance Assistant'}
-                  </div>
-                  <div className="prose prose-sm max-w-none">
-                    <div dangerouslySetInnerHTML={{ __html: formatMessage(message.content) }} />
-                  </div>
-
-                  {message.role === 'assistant' && !message.isIntro && (
-                    <div className="mt-2 flex items-center gap-2 text-gray-500">
-                      <button className="hover:text-green-600"><ThumbsUpIcon size={16} /></button>
-                      <button className="hover:text-red-600"><ThumbsDownIcon size={16} /></button>
-                      <button className="text-xs hover:underline ml-1">Copy</button>
-                    </div>
-                  )}
-                </div>
+        <div
+          style={{
+            height: "450px",
+            overflowY: "auto",
+            padding: "1.5rem",
+            borderRadius: "12px",
+            background: "rgba(15, 23, 42, 0.6)",
+            border: "1px solid rgba(255, 255, 255, 0.05)",
+            marginBottom: "1.5rem",
+            scrollbarWidth: "thin",
+            scrollbarColor: "#4B5563 #1F2937",
+          }}
+        >
+          {messages.length === 0 ? (
+            <div
+              style={{
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#94a3b8",
+                textAlign: "center",
+                padding: "0 2rem",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "3rem",
+                  marginBottom: "1rem",
+                  background: "linear-gradient(135deg, #8B5CF6, #EC4899)",
+                  borderRadius: "50%",
+                  width: "80px",
+                  height: "80px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 10px 25px rgba(139, 92, 246, 0.3)",
+                }}
+              >
+                💬
               </div>
+              <h3
+                style={{
+                  margin: "0 0 0.5rem",
+                  fontWeight: "500",
+                  fontSize: "1.2rem",
+                }}
+              >
+                Welcome to FinAI Chat
+              </h3>
+              <p style={{ margin: 0, fontSize: "0.95rem" }}>
+                Ask anything to get started with your AI assistant
+              </p>
             </div>
-          ))}
-
-          {isThinking && (
-            <div className="max-w-3xl mx-auto">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#D9F2EA] flex items-center justify-center text-[#114B5F] flex-shrink-0">F</div>
-                <div className="flex-1">
-                  <div className="font-medium text-sm text-gray-700 mb-1">Finance Assistant</div>
-                  <div className="animate-pulse flex space-x-1">
-                    <div className="h-2 w-2 bg-gray-400 rounded-full"></div>
-                    <div className="h-2 w-2 bg-gray-400 rounded-full"></div>
-                    <div className="h-2 w-2 bg-gray-400 rounded-full"></div>
+          ) : (
+            messages.map((msg, idx) => (
+              <div
+                key={idx}
+                style={{
+                  display: "flex",
+                  justifyContent:
+                    msg.sender === "user" ? "flex-end" : "flex-start",
+                  margin: "1rem 0",
+                }}
+              >
+                {msg.sender === "bot" && (
+                  <div
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      borderRadius: "50%",
+                      background: "linear-gradient(135deg, #8B5CF6, #EC4899)",
+                      marginRight: "12px",
+                      flexShrink: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "1rem",
+                    }}
+                  >
+                    🤖
                   </div>
-                </div>
+                )}
+                <div
+                  style={{
+                    background:
+                      msg.sender === "user"
+                        ? "linear-gradient(135deg, #6366F1, #8B5CF6)"
+                        : "rgba(30, 41, 59, 0.8)",
+                    padding: "0.9rem 1.2rem",
+                    borderRadius:
+                      msg.sender === "user"
+                        ? "16px 16px 4px 16px"
+                        : "16px 16px 16px 4px",
+                    maxWidth: "75%",
+                    wordWrap: "break-word",
+                    boxShadow:
+                      msg.sender === "user"
+                        ? "0 4px 15px rgba(139, 92, 246, 0.15)"
+                        : "0 4px 15px rgba(0, 0, 0, 0.1)",
+                    border:
+                      msg.sender === "user"
+                        ? "none"
+                        : "1px solid rgba(255, 255, 255, 0.05)",
+                    fontSize: "0.95rem",
+                    lineHeight: "1.5",
+                  }}
+                  {...(msg.isHtml
+                    ? { dangerouslySetInnerHTML: { __html: msg.text } }
+                    : { children: msg.text })}
+                />
+                {msg.sender === "user" && (
+                  <div
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      borderRadius: "50%",
+                      background: "#3B82F6",
+                      marginLeft: "12px",
+                      flexShrink: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "1rem",
+                    }}
+                  >
+                    👤
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+          {loading && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                margin: "1rem 0",
+                gap: "10px",
+              }}
+            >
+              <div
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #8B5CF6, #EC4899)",
+                  marginRight: "12px",
+                  flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "1rem",
+                }}
+              >
+                🤖
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "4px",
+                }}
+              >
+                {[1, 2, 3].map((n) => (
+                  <div
+                    key={n}
+                    style={{
+                      width: "8px",
+                      height: "8px",
+                      borderRadius: "50%",
+                      background: "#8B5CF6",
+                      opacity: 0.7,
+                      animation: `pulseDot 1.5s infinite ease-in-out ${
+                        n * 0.2
+                      }s`,
+                    }}
+                  ></div>
+                ))}
               </div>
             </div>
           )}
-          <div ref={messagesEndRef} />
-        </main>
+          <div ref={bottomRef} />
+        </div>
 
-        {/* Input */}
-        <footer className="p-4 border-t border-gray-200 bg-white">
-          <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-            <div className="relative">
-              <input
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Ask about budgeting, expenses, savings..."
-                className="w-full p-4 pr-12 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:border-[#1A936F] focus:ring-1 focus:ring-[#1A936F]"
-                disabled={isThinking}
-              />
-              <button
-                type="submit"
-                disabled={!inputValue.trim() || isThinking}
-                className={`absolute right-3 top-1/2 transform -translate-y-1/2 rounded-md p-1.5 ${
-                  inputValue.trim() && !isThinking
-                    ? 'text-[#1A936F] hover:bg-[#E6F4EF]' 
-                    : 'text-gray-400'
-                }`}
-              >
-                <SendIcon size={20} />
-              </button>
-            </div>
-            <p className="text-xs text-gray-500 mt-2 text-center">Responses are for informational purposes and not financial advice.</p>
-          </form>
-        </footer>
-      </section>
+        <div
+          style={{
+            display: "flex",
+            gap: "0.75rem",
+            position: "relative",
+          }}
+        >
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            placeholder="Type your message here..."
+            style={{
+              flex: 1,
+              padding: "1rem 1.25rem",
+              borderRadius: "12px",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              background: "rgba(15, 23, 42, 0.5)",
+              color: "#fff",
+              outline: "none",
+              fontSize: "0.95rem",
+              transition: "all 0.2s ease",
+              boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+            }}
+          />
+          <button
+            onClick={handleSend}
+            disabled={loading}
+            style={{
+              padding: "0 1.5rem",
+              borderRadius: "12px",
+              background: loading
+                ? "rgba(139, 92, 246, 0.3)"
+                : "linear-gradient(135deg, #8B5CF6, #6366F1)",
+              color: "#fff",
+              fontWeight: "600",
+              cursor: loading ? "not-allowed" : "pointer",
+              transition: "all 0.2s ease",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: loading
+                ? "none"
+                : "0 4px 15px rgba(139, 92, 246, 0.3)",
+              border: "none",
+              minWidth: "100px",
+            }}
+          >
+            {loading ? "..." : "Send"}
+          </button>
+        </div>
+
+        <style jsx global>{`
+          @keyframes pulseDot {
+            0%,
+            100% {
+              transform: scale(1);
+              opacity: 0.7;
+            }
+            50% {
+              transform: scale(1.5);
+              opacity: 1;
+            }
+          }
+
+          *::-webkit-scrollbar {
+            width: 6px;
+          }
+
+          *::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+          }
+
+          *::-webkit-scrollbar-thumb {
+            background-color: rgba(139, 92, 246, 0.5);
+            border-radius: 20px;
+          }
+        `}</style>
+      </div>
     </div>
   );
 }
