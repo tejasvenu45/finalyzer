@@ -42,7 +42,7 @@ export default function Home() {
             <CardTitle className="text-lg">Expense Tracker</CardTitle>
           </CardHeader>
           <CardContent>
-            Track your daily, weekly, and monthly expenses with ease and get alerts when you're overspending.
+            Track your daily, weekly, and monthly expenses with ease and get alerts when you&apos;re overspending.
           </CardContent>
         </Card>
 
