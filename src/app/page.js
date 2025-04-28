@@ -22,7 +22,7 @@ export default function Home() {
         </p>
         <div className="flex justify-center gap-4 mt-4">
           <Link href="/register">
-            <Button size="lg">Get Started</Button>
+            <Button size="lg">Signup</Button>
           </Link>
           <Link href="/login">
             <Button variant="outline" size="lg">Login</Button>
