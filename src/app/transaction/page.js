@@ -35,18 +35,18 @@ export default function TransactionsPage() {
   };
   
 
-  useEffect(() => {
-    const init = async () => {
-      if (!authLoading) {
-        if (!isAuthenticated || !user) {
-          router.push("/login");
-        } else {
-          await fetchCat();
-        }
-      }
-    };
-    init();
-  }, [authLoading, isAuthenticated, user, router]);  
+  // useEffect(() => {
+  //   const init = async () => {
+  //     if (!authLoading) {
+  //       if (!isAuthenticated || !user) {
+  //         router.push("/login");
+  //       } else {
+  //         await fetchCat();
+  //       }
+  //     }
+  //   };
+  //   init();
+  // }, [authLoading, isAuthenticated, user, router]);  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
