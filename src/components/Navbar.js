@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Dialog,
   DialogPanel,
@@ -75,19 +76,15 @@ const handleLogout = async () => {
   }
 };
 
-
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isAuthenticated } = useAuth();
 
   return (
     <header className="bg-background shadow-sm">
-      <nav
-        className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8"
-        aria-label="Global"
-      >
+      <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8" aria-label="Global">
         <div className="flex lg:flex-1 items-center gap-2">
-          <a href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
+          <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
             <img
               className="h-8 w-auto"
               src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
@@ -96,7 +93,7 @@ export default function Navbar() {
             <span className="text-purple-600 text-4xl font-bold">
               FINALYZER
             </span>
-          </a>
+          </Link>
         </div>
         <div className="flex lg:hidden">
           <button
@@ -110,78 +107,72 @@ export default function Navbar() {
         </div>
         {isAuthenticated ? (
           <div className="flex items-center gap-4">
-            <a
+            <Link
               href="/chat"
               className="rounded-2xl bg-purple-600 px-6 py-3 text-white font-medium hover:bg-purple-700 transition"
             >
               Financial Chatbot
-            </a>
-            <a
+            </Link>
+            <Link
               href="/scan"
               className="rounded-2xl bg-purple-600 px-6 py-3 text-white font-medium hover:bg-purple-700 transition"
             >
               Scan Receipt
-            </a>
-            <a
+            </Link>
+            <Link
               href="/transaction"
               className="rounded-2xl bg-purple-600 px-6 py-3 text-white font-medium hover:bg-purple-700 transition"
             >
               Add Transaction
-            </a>
-            <a
+            </Link>
+            <Link
               href="/dashboard"
               className="rounded-2xl bg-purple-600 px-6 py-3 text-white font-medium hover:bg-purple-700 transition"
             >
               Dashboard
-            </a>
-            <a
+            </Link>
+            <Link
               href="/rewards"
               className="rounded-2xl bg-purple-600 px-6 py-3 text-white font-medium hover:bg-purple-700 transition flex items-center gap-2"
             >
               <ShoppingCartIcon className="w-5 h-5" />
               Rewards
-            </a>
+            </Link>
             <button
               onClick={handleLogout}
               className="rounded-2xl bg-purple-600 px-6 py-3 text-white font-medium hover:bg-purple-700 transition focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center gap-2"
               aria-label="Log out of Finalyzer"
             >
-              
               Log out
             </button>
             <UserIcon className="w-6 h-6 text-purple-600" />
           </div>
         ) : (
           <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-            <a
+            <Link
               href="/login"
               className="rounded-2xl bg-purple-600 px-6 py-3 text-white font-medium hover:bg-purple-700 transition"
             >
               Log in <span aria-hidden="true">&rarr;</span>
-            </a>
+            </Link>
           </div>
         )}
       </nav>
 
-      <Dialog
-        as="div"
-        className="lg:hidden"
-        open={mobileMenuOpen}
-        onClose={setMobileMenuOpen}
-      >
+      <Dialog as="div" className="lg:hidden" open={mobileMenuOpen} onClose={setMobileMenuOpen}>
         <div className="fixed inset-0 z-10" />
         <DialogPanel className="fixed inset-y-0 right-0 z-10 w-full overflow-y-auto bg-background px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
           <div className="flex items-center justify-between">
-            <a href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
+            <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
               <img
                 className="h-8 w-auto"
                 src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-                alt=""
+                alt="Finalyzer logo"
               />
               <span className="text-white text-lg font-semibold">
                 Finalyzer
               </span>
-            </a>
+            </Link>
             <button
               type="button"
               onClick={() => setMobileMenuOpen(false)}
@@ -203,7 +194,7 @@ export default function Navbar() {
                     {products.map((item) => (
                       <DisclosureButton
                         key={item.name}
-                        as="a"
+                        as={Link}
                         href={item.href}
                         className="block rounded-lg py-2 pr-3 pl-6 text-sm font-semibold text-gray-700 hover:bg-gray-100"
                       >
@@ -212,38 +203,38 @@ export default function Navbar() {
                     ))}
                   </DisclosurePanel>
                 </Disclosure>
-                <a
+                <Link
                   href="#"
                   className="block rounded-lg px-3 py-2 text-base font-semibold text-gray-700 hover:bg-gray-100"
                 >
                   Features
-                </a>
-                <a
+                </Link>
+                <Link
                   href="#"
                   className="block rounded-lg px-3 py-2 text-base font-semibold text-gray-700 hover:bg-gray-100"
                 >
                   Marketplace
-                </a>
-                <a
+                </Link>
+                <Link
                   href="#"
                   className="block rounded-lg px-3 py-2 text-base font-semibold text-gray-700 hover:bg-gray-100"
                 >
                   Company
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/rewards"
                   className="block rounded-lg px-3 py-2 text-base font-semibold text-purple-600 hover:bg-purple-100"
                 >
                   🎁 Rewards
-                </a>
+                </Link>
               </div>
               <div className="py-6">
-                <a
+                <Link
                   href="/login"
                   className="block rounded-lg px-3 py-2.5 text-base font-semibold text-gray-700 hover:bg-gray-100"
                 >
                   Log in
-                </a>
+                </Link>
               </div>
             </div>
           </div>
