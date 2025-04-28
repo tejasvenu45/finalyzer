@@ -4,12 +4,12 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sparkles, BarChart, Wallet, Trophy } from 'lucide-react';
-import { Metadata } from 'next';
+// import { Metadata } from 'next';
 
-export const metadata = {
-  title: 'Finalyzer - Your AI Financial Partner',
-  description: 'Personalized budgeting, smart expense tracking, and rewards for saving!',
-};
+// export const metadata = {
+//   title: 'Finalyzer - Your AI Financial Partner',
+//   description: 'Personalized budgeting, smart expense tracking, and rewards for saving!',
+// };
 
 export default function Home() {
   return (
